@@ -1,22 +1,15 @@
 const express = require("express");
 const router = express.Router();
+const taskController = require("../controllers/taskController");
 
 router
   .route("/")
-  .get((req, res) => {
-    res.send("Fetch all tasks");
-  })
-  .post((req, res) => {
-    res.send("Create a task");
-  });
+  .get(taskController.getAllTasks)
+  .post(taskController.createTask);
 
 router
   .route("/:id")
-  .patch((req, res) => {
-    res.send("Update a task by id");
-  })
-  .delete((req, res) => {
-    res.send("Delete a task by id");
-  });
+  .patch(taskController.updateTask)
+  .delete(taskController.deleteTask);
 
 module.exports = router;
