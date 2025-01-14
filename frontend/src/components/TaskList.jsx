@@ -1,24 +1,27 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import TaskItem from "./TaskItem";
+import axios from "axios";
 
-const tempTasks = [
-  {
-    id: 1,
-    title: "Learn MERN development",
-    completed: false,
-    dueDate: "2025-01-30T16:00:00.000Z",
-  },
-  {
-    id: 2,
-    title: "Hit the gym",
-    completed: true,
-  },
-];
+const getTasks = async () => {
+  const res = await axios.get("/api/tasks");
+  console.log(res);
+  return res.data.data;
+};
 function TaskList() {
+  const { data: tasks } = useSuspenseQuery({
+    queryKey: ["tasks"],
+    queryFn: getTasks,
+    retry: false,
+    throwOnError: true,
+  });
+
   return (
     <ul className="space-y-3">
-      {tempTasks.map((task) => (
-        <TaskItem key={task.id} task={task} />
-      ))}
+      {tasks.length === 0 && (
+        <p>No tasks yet. Add a new one and be productive! 😊</p>
+      )}
+      {tasks.length > 0 &&
+        tasks?.map((task) => <TaskItem key={task._id} task={task} />)}
     </ul>
   );
 }
