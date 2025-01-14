@@ -1,11 +1,14 @@
 /* eslint-disable no-console */
 require("dotenv").config();
+
 const express = require("express");
-const app = express();
 const mongoose = require("mongoose");
+
 const taskRoutes = require("./routes/taskRoutes");
 const globalErrorHandler = require("./controllers/errorController");
 const AppError = require("./utils/appError");
+
+const app = express();
 
 app.use(express.json());
 app.get("/", (req, res) => {
