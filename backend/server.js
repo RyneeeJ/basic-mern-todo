@@ -5,6 +5,8 @@ const app = express();
 const mongoose = require("mongoose");
 const taskRoutes = require("./routes/taskRoutes");
 const globalErrorHandler = require("./controllers/errorController");
+const AppError = require("./utils/appError");
+
 app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Hello World");
@@ -18,13 +20,12 @@ mongoose
 app.use("/tasks", taskRoutes);
 
 app.all("*", (req, res, next) => {
-  res.status(404).json({
-    status: "fail",
-    message: "This page does not exist",
-  });
+  const error = new AppError(`This page ${req.url} does not exist`, 404);
+  next(error);
 });
 
 app.use(globalErrorHandler);
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
