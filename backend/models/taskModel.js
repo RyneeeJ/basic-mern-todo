@@ -16,7 +16,15 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: Date.now(),
     },
-    dueDate: Date,
+    dueDate: {
+      type: Date,
+      validate: {
+        validator: function (val) {
+          return val >= Date.now();
+        },
+        message: "Due date must be at least today or in the future",
+      },
+    },
   },
   {
     strictQuery: true,
