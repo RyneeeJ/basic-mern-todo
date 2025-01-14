@@ -2,7 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const taskRoutes = require("./taskRoutes");
+const taskRoutes = require("./routes/taskRoutes");
+
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
