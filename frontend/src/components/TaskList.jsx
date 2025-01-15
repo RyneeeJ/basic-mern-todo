@@ -4,7 +4,6 @@ import axios from "axios";
 
 const getTasks = async () => {
   const res = await axios.get("/api/tasks");
-  console.log(res);
   return res.data.data;
 };
 function TaskList() {

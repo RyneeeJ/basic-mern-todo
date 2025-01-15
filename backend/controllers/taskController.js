@@ -14,7 +14,7 @@ exports.createTask = async (req, res, next) => {
 
 exports.getAllTasks = async (req, res, next) => {
   try {
-    const tasks = await Task.find({});
+    const tasks = await Task.find({}).sort("createdAt");
     res.status(200).json({
       status: "Success",
       data: tasks,
