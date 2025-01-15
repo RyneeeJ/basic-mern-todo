@@ -11,16 +11,13 @@ const AppError = require("./utils/appError");
 const app = express();
 
 app.use(express.json());
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log(err));
 
-app.use("/tasks", taskRoutes);
+app.use("/api/tasks", taskRoutes);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(`This page ${req.url} does not exist`, 404);
