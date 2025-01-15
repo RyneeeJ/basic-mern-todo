@@ -29,7 +29,7 @@ function NewTaskForm() {
     const title = formData.get("title");
     const dueDate = formData.get("dueDate");
     const newTask = dueDate ? { title, dueDate } : { title };
-    mutate(newTask);
+    mutate(newTask, { onSuccess: () => e.target.reset() });
   };
 
   return (

@@ -49,7 +49,7 @@ function TaskItem({ task }) {
         )}
       </div>
 
-      <DeleteTaskBtn />
+      <DeleteTaskBtn id={task._id} />
     </li>
   );
 }
