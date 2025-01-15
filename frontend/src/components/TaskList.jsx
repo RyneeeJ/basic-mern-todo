@@ -3,8 +3,12 @@ import TaskItem from "./TaskItem";
 import axios from "axios";
 
 const getTasks = async () => {
-  const res = await axios.get("/api/tasks");
-  return res.data.data;
+  try {
+    const res = await axios.get("/api/tasks");
+    return res.data.data;
+  } catch (err) {
+    throw new Error(err.response.data.message);
+  }
 };
 function TaskList() {
   const { data: tasks } = useSuspenseQuery({
