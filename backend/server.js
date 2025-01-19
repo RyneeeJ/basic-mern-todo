@@ -5,6 +5,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 
 const taskRoutes = require("./routes/taskRoutes");
+const userRoutes = require("./routes/userRoutes");
 const globalErrorHandler = require("./controllers/errorController");
 const AppError = require("./utils/appError");
 
@@ -18,6 +19,7 @@ mongoose
   .catch((err) => console.log(err));
 
 app.use("/api/tasks", taskRoutes);
+app.use("/api/users", userRoutes);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(`This page ${req.url} does not exist`, 404);
