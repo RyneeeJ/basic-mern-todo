@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validatorApi = require("validator");
 const bcrypt = require("bcryptjs");
@@ -35,6 +36,8 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 userSchema.pre("save", async function (next) {
@@ -54,10 +57,21 @@ userSchema.method("changedPasswordAfter", function (JWTTimeStamp) {
   // return true if 'passwordChangedAt' > token issued at
   if (this.passwordChangedAt) {
     const changedTimeStamp = this.passwordChangedAt.getTime();
-    console.log(changedTimeStamp, JWTTimeStamp * 1000);
     return changedTimeStamp > JWTTimeStamp * 1000;
   }
   return false;
+});
+
+userSchema.method("createResetPasswordToken", function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 });
 const User = mongoose.model("User", userSchema);
 

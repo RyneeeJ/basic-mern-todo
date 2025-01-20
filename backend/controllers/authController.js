@@ -2,7 +2,7 @@ const { promisify } = require("util");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
-
+const sendEmail = require("../utils/email");
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.EXPIRES_IN,
@@ -93,6 +93,53 @@ exports.protect = async (req, res, next) => {
     req.user = currentUser;
 
     next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    // Get user via email
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user)
+      throw new AppError(
+        "There is no user associated with this email address",
+        404
+      );
+
+    // Create reset password token
+    const resetToken = user.createResetPasswordToken();
+
+    await user.save({ validateBeforeSave: false });
+    // Send password reset link via email
+
+    const resetUrl = `${req.protocol}://${req.hostname}/api/users/resetPassword/${resetToken}`;
+
+    const mailOptions = {
+      receiver: req.body.email,
+      subject: "Password Reset Link (valid for 10 min)",
+      message: `Forgot your password? Click this password reset link to reset your password: ${resetUrl}.\nPlease ignore this email if you did not forget your password.`,
+    };
+
+    try {
+      await sendEmail(mailOptions);
+
+      res.status(200).json({
+        status: "Success",
+        message: "Password reset link has been sent to your email!",
+      });
+      // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      throw new AppError(
+        "There was a problem sending the reset link to your email",
+        500
+      );
+    }
   } catch (err) {
     next(err);
   }
