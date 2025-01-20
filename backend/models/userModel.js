@@ -49,6 +49,15 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.pre("save", function (next) {
+  // only set passwordChangedAt property if the password is modified and if the document is not new
+  if (!this.isModified("password") || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 3000;
+
+  next();
+});
+
 userSchema.method("checkPassword", async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 });

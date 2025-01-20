@@ -1,8 +1,10 @@
+const crypto = require("crypto");
 const { promisify } = require("util");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
 const sendEmail = require("../utils/email");
+
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.EXPIRES_IN,
@@ -115,7 +117,9 @@ exports.forgotPassword = async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
     // Send password reset link via email
 
-    const resetUrl = `${req.protocol}://${req.hostname}/api/users/resetPassword/${resetToken}`;
+    const resetUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/api/users/resetPassword/${resetToken}`;
 
     const mailOptions = {
       receiver: req.body.email,
@@ -140,6 +144,39 @@ exports.forgotPassword = async (req, res, next) => {
         500
       );
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  try {
+    // get user based on token and token mus not be expired: passwordResetExpires > Date.now()
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) throw new AppError("Token is invalid or has expired", 404);
+
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    const token = signToken(user._id);
+
+    res.status(200).json({
+      status: "Success",
+      token,
+      message: "Password reset successfully!",
+    });
   } catch (err) {
     next(err);
   }
