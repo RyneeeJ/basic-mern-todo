@@ -181,3 +181,32 @@ exports.resetPassword = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updatePassword = async (req, res, next) => {
+  try {
+    // Verify oldPasswordConfirm
+    const user = await User.findById(req.user._id).select("+password");
+    const passwordCorrect = await user.checkPassword(
+      req.body.oldPasswordConfirm
+    );
+
+    if (!passwordCorrect)
+      throw new AppError("Old password confirmation is incorrect.", 403);
+    // set newPassword and newPasswordConfirm
+
+    user.password = req.body.newPassword;
+    user.passwordConfirm = req.body.newPasswordConfirm;
+    await user.save();
+    // Log in user, send JWT
+
+    const token = signToken(user._id);
+
+    res.status(200).json({
+      status: "Success",
+      token,
+      message: "Password updated successfully!",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
