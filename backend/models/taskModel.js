@@ -12,7 +12,6 @@ const taskSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-
     completed: {
       type: Boolean,
       default: false,
@@ -36,9 +35,16 @@ const taskSchema = new mongoose.Schema(
   },
   {
     strictQuery: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
+taskSchema.virtual("isOverdue").get(function () {
+  if (!this.dueDate) return false;
+
+  return new Date(this.dueDate) < new Date();
+});
 // const Task = mongoose.model("Task", taskSchema);
 
 module.exports = taskSchema;

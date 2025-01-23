@@ -4,7 +4,7 @@ const User = require("../models/userModel");
 
 exports.createTask = async (req, res, next) => {
   try {
-    //  Get user from auth token
+    // Get user from auth token
     const user = await User.findByIdAndUpdate(req.user._id);
     // insert task to user's tasks property
     user.tasks.push(req.body);
@@ -14,6 +14,57 @@ exports.createTask = async (req, res, next) => {
       status: "Success",
       data: {
         task: user.tasks.at(-1),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllTasks = async (req, res, next) => {
+  try {
+    // get user's tasks (along with isOverdue virtual prop) based from auth token a
+    const tasks = await User.findById(req.user._id).select("tasks");
+
+    // Tried using aggregation pipeline to get use tasks with isOverdue prop computed dynamically
+    /*
+    const tasks = await User.aggregate([
+      {
+        $project: {
+          _id: 0,
+          tasks: {
+            $map: {
+              input: "$tasks",
+              as: "todo",
+              in: {
+                $mergeObjects: [
+                  "$$todo",
+                  {
+                    isOverdue: {
+                      $cond: [
+                        {
+                          $and: [
+                            { $ifNull: ["$$todo.dueDate", false] },
+                            { $lt: ["$$todo.dueDate", new Date()] },
+                          ], // Check if dueDate is in the past
+                        },
+                        true,
+                        false,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ]);
+    */
+    res.status(200).json({
+      status: "Success",
+      data: {
+        tasks,
       },
     });
   } catch (err) {
