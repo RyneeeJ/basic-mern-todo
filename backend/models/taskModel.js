@@ -8,6 +8,11 @@ const taskSchema = new mongoose.Schema(
       trim: true,
       unique: true,
     },
+    description: {
+      type: String,
+      trim: true,
+    },
+
     completed: {
       type: Boolean,
       default: false,
@@ -34,6 +39,6 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-const Task = mongoose.model("Task", taskSchema);
+// const Task = mongoose.model("Task", taskSchema);
 
-module.exports = Task;
+module.exports = taskSchema;

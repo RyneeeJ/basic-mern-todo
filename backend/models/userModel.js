@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const validatorApi = require("validator");
 const bcrypt = require("bcryptjs");
 
+const tasksSchema = require("./taskModel");
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -19,6 +21,7 @@ const userSchema = new mongoose.Schema({
     required: [true, "Name is required"],
     trim: true,
   },
+  tasks: [tasksSchema],
   password: {
     type: String,
     required: [true, "Password is required"],

@@ -1,5 +1,27 @@
-const Task = require("../models/taskModel");
+// const Task = require("../models/taskModel");
 
+const User = require("../models/userModel");
+
+exports.createTask = async (req, res, next) => {
+  try {
+    //  Get user from auth token
+    const user = await User.findByIdAndUpdate(req.user._id);
+    // insert task to user's tasks property
+    user.tasks.push(req.body);
+    await user.save({ validateModifiedOnly: true });
+
+    res.status(201).json({
+      status: "Success",
+      data: {
+        task: user.tasks.at(-1),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/*
 exports.createTask = async (req, res, next) => {
   try {
     const newTask = await Task.create(req.body);
@@ -57,3 +79,4 @@ exports.deleteTask = async (req, res, next) => {
     next(err);
   }
 };
+*/
