@@ -11,6 +11,27 @@ const signToken = (id) => {
   });
 };
 
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  const cookieOptions = {
+    httpOnly: true,
+    expires: new Date(
+      Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+  };
+  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+
+  res.cookie("jwt", token, cookieOptions);
+
+  user.password = undefined;
+  res.status(statusCode).json({
+    status: "Success",
+    token,
+    data: statusCode === 201 ? user : undefined,
+  });
+};
+
 exports.signup = async (req, res, next) => {
   try {
     const newUser = await User.create({
@@ -20,13 +41,7 @@ exports.signup = async (req, res, next) => {
       passwordConfirm: req.body.passwordConfirm,
     });
 
-    const token = signToken(newUser._id);
-
-    res.status(201).json({
-      status: "Success",
-      token,
-      data: newUser,
-    });
+    createSendToken(newUser, 201, res);
   } catch (err) {
     next(err);
   }
@@ -47,12 +62,7 @@ exports.login = async (req, res, next) => {
     if (!user || !passwordCorrect)
       throw new AppError("Incorrect email or password", 401);
 
-    const token = signToken(user.id);
-    res.status(200).json({
-      status: "Success",
-      token,
-      message: "Logged in successfully",
-    });
+    createSendToken(user, 200, res);
   } catch (err) {
     next(err);
   }
@@ -170,13 +180,7 @@ exports.resetPassword = async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
-    const token = signToken(user._id);
-
-    res.status(200).json({
-      status: "Success",
-      token,
-      message: "Password reset successfully!",
-    });
+    createSendToken(user, 200, res);
   } catch (err) {
     next(err);
   }
@@ -199,13 +203,7 @@ exports.updatePassword = async (req, res, next) => {
     await user.save();
     // Log in user, send JWT
 
-    const token = signToken(user._id);
-
-    res.status(200).json({
-      status: "Success",
-      token,
-      message: "Password updated successfully!",
-    });
+    createSendToken(user, 200, res);
   } catch (err) {
     next(err);
   }
