@@ -45,6 +45,5 @@ taskSchema.virtual("isOverdue").get(function () {
 
   return new Date(this.dueDate) < new Date();
 });
-// const Task = mongoose.model("Task", taskSchema);
 
 module.exports = taskSchema;

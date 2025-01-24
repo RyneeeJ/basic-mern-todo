@@ -1,6 +1,5 @@
-// const Task = require("../models/taskModel");
-
 const User = require("../models/userModel");
+const AppError = require("../utils/appError");
 
 exports.createTask = async (req, res, next) => {
   try {
@@ -79,6 +78,13 @@ exports.deleteTask = async (req, res, next) => {
     // get user based from auth token
     const user = await User.findById(req.user._id);
 
+    const taskIndex = user.tasks.findIndex(
+      (task) => task._id.toString() === req.params.id
+    );
+
+    if (taskIndex === -1)
+      throw new AppError("No tasks found with this id", 404);
+
     user.tasks = user.tasks.filter(
       (task) => task._id.toString() !== req.params.id
     );
@@ -87,6 +93,7 @@ exports.deleteTask = async (req, res, next) => {
 
     res.status(204).json({
       status: "Success",
+      data: null,
     });
   } catch (err) {
     next(err);
@@ -101,6 +108,9 @@ exports.updateTask = async (req, res, next) => {
       (task) => task._id.toString() === req.params.id
     );
 
+    if (taskIndex === -1)
+      throw new AppError("No tasks found with this id", 404);
+
     user.tasks[taskIndex] = Object.assign(user.tasks[taskIndex], req.body);
     await user.save({ validateModifiedOnly: true });
 
@@ -114,63 +124,3 @@ exports.updateTask = async (req, res, next) => {
     next(err);
   }
 };
-
-/*
-exports.createTask = async (req, res, next) => {
-  try {
-    const newTask = await Task.create(req.body);
-    res.status(201).json({
-      status: "Success",
-      data: newTask,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getAllTasks = async (req, res, next) => {
-  try {
-    const tasks = await Task.find({}).sort("createdAt");
-    res.status(200).json({
-      status: "Success",
-      data: tasks,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.updateTask = async (req, res, next) => {
-  try {
-    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!updatedTask) {
-      return res.status(404).json({
-        status: "fail",
-        message: "This task does not exist",
-      });
-    }
-    res.status(200).json({
-      status: "Success",
-      data: updatedTask,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.deleteTask = async (req, res, next) => {
-  try {
-    await Task.findByIdAndDelete(req.params.id);
-
-    res.status(204).json({
-      status: "Success",
-      data: null,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-*/
