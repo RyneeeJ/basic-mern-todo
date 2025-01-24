@@ -8,9 +8,9 @@ router
   .get(authController.protect, taskController.getAllTasks)
   .post(authController.protect, taskController.createTask);
 
-// router
-//   .route("/:id")
-//   .patch(taskController.updateTask)
-//   .delete(taskController.deleteTask);
+router
+  .route("/:id")
+  //   .patch(taskController.updateTask)
+  .delete(authController.protect, taskController.deleteTask);
 
 module.exports = router;

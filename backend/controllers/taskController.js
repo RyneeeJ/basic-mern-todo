@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 exports.createTask = async (req, res, next) => {
   try {
     // Get user from auth token
-    const user = await User.findByIdAndUpdate(req.user._id);
+    const user = await User.findById(req.user._id);
     // insert task to user's tasks property
     user.tasks.push(req.body);
     await user.save({ validateModifiedOnly: true });
@@ -24,7 +24,7 @@ exports.createTask = async (req, res, next) => {
 exports.getAllTasks = async (req, res, next) => {
   try {
     // get user's tasks (along with isOverdue virtual prop) based from auth token a
-    const tasks = await User.findById(req.user._id).select("tasks");
+    const { tasks } = await User.findById(req.user._id).select("tasks -_id");
 
     // Tried using aggregation pipeline to get use tasks with isOverdue prop computed dynamically
     /*
@@ -61,8 +61,10 @@ exports.getAllTasks = async (req, res, next) => {
       },
     ]);
     */
+
     res.status(200).json({
       status: "Success",
+      result: tasks.length,
       data: {
         tasks,
       },
@@ -72,6 +74,24 @@ exports.getAllTasks = async (req, res, next) => {
   }
 };
 
+exports.deleteTask = async (req, res, next) => {
+  try {
+    // get user based from auth token
+    const user = await User.findById(req.user._id);
+
+    user.tasks = user.tasks.filter(
+      (task) => task._id.toString() !== req.params.id
+    );
+
+    await user.save({ validateModifiedOnly: true });
+
+    res.status(204).json({
+      status: "Success",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 /*
 exports.createTask = async (req, res, next) => {
   try {
