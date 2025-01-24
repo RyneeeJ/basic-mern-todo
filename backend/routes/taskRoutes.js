@@ -10,7 +10,7 @@ router
 
 router
   .route("/:id")
-  //   .patch(taskController.updateTask)
+  .patch(authController.protect, taskController.updateTask)
   .delete(authController.protect, taskController.deleteTask);
 
 module.exports = router;

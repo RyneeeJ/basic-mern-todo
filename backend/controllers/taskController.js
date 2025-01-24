@@ -83,7 +83,7 @@ exports.deleteTask = async (req, res, next) => {
       (task) => task._id.toString() !== req.params.id
     );
 
-    await user.save({ validateModifiedOnly: true });
+    await user.save({ validateBeforeSave: false });
 
     res.status(204).json({
       status: "Success",
@@ -92,6 +92,29 @@ exports.deleteTask = async (req, res, next) => {
     next(err);
   }
 };
+exports.updateTask = async (req, res, next) => {
+  try {
+    // get user based from auth token
+    const user = await User.findById(req.user._id);
+
+    const taskIndex = user.tasks.findIndex(
+      (task) => task._id.toString() === req.params.id
+    );
+
+    user.tasks[taskIndex] = Object.assign(user.tasks[taskIndex], req.body);
+    await user.save({ validateModifiedOnly: true });
+
+    res.status(200).json({
+      status: "Success",
+      data: {
+        task: user.tasks[taskIndex],
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 /*
 exports.createTask = async (req, res, next) => {
   try {
